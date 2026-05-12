@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Borrelregistratie</title>
+  <style>
+    :root {
+      --helmond-rood: #c8102e;
+      --helmond-donker: #000000;
+      --helmond-licht: #f7f4ef;
+      --helmond-geel: #ffd200;
+      --wit: #ffffff;
+      --rand: #dddddd;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: var(--helmond-licht);
+      color: #111111;
+    }
+
+    header {
+      background: var(--helmond-donker);
+      color: var(--wit);
+      padding: 22px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .headertekst h1 {
+      margin: 0 0 8px 0;
+      font-size: 32px;
+    }
+
+    .headertekst p {
+      margin: 0;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .logo-img {
+      max-width: 300px;
+      height: auto;
+      display: block;
+    }
+
+    main {
+      padding: 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .blok {
+      background: var(--wit);
+      padding: 20px;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--helmond-rood);
+    }
+
+    input, button {
+      padding: 9px 12px;
+      margin: 4px;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .toevoegknop, .plus, .excelknop {
+      background: var(--helmond-rood);
+      color: var(--wit);
+    }
+
+    .min {
+      background: var(--helmond-geel);
+      color: #000000;
+    }
+
+    .uitklapknop {
+      background: #000000;
+      color: var(--wit);
+      width: 100%;
+      text-align: left;
+      font-size: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .uitklap-inhoud {
+      display: none;
+    }
+
+    .uitklap-inhoud.open {
+      display: block;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      background: var(--wit);
+    }
+
+    th {
+      background: var(--helmond-rood);
+      color: var(--wit);
+    }
+
+    th, td {
+      border: 1px solid var(--rand);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .drankgroep {
+      display: inline-block;
+      margin: 3px 18px 8px 0;
+      padding: 7px;
+      background: #f1f1f1;
+      border-radius: 8px;
+      min-width: 135px;
+    }
+
+    .aantal {
+      color: #555555;
+      font-weight: normal;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .logo-img {
+        max-width: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="headertekst">
+    <h1>Borrelregistratie</h1>
+    <p>Registreer snel wie wat heeft gedronken.</p>
+  </div>
+
+  <img
+    class="logo-img"
+    src="gemeente-helmond-logo.png"
+    alt="Gemeente Helmond"
+  >
+</header>
+
+<main>
+
+  <div class="blok">
+    <h2>Naam toevoegen</h2>
+    <input type="text" id="naam" placeholder="Naam">
+    <button class="toevoegknop" onclick="voegPersoonToe()">Toevoegen</button>
+  </div>
+
+  <div class="blok">
+    <h2>Overzicht namen en registratie</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Naam</th>
+          <th>Registreer drankje</th>
+          <th>Totaal bedrag</th>
+        </tr>
+      </thead>
+      <tbody id="namenOverzicht"></tbody>
+    </table>
+  </div>
+
+  <button class="uitklapknop" onclick="toggleUitklap('drankenBlok')">
+    Overzicht dranken en prijzen openen/sluiten
+  </button>
+
+  <div id="drankenBlok" class="uitklap-inhoud">
+    <div class="blok">
+      <h2>Overzicht dranken en prijzen</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Drank</th>
+            <th>Prijs</th>
+          </tr>
+        </thead>
+        <tbody id="drankenOverzicht"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <button class="uitklapknop" onclick="toggleUitklap('verbruikBlok')">
+    Verbruik per persoon openen/sluiten
+  </button>
+
+  <div id="verbruikBlok" class="uitklap-inhoud">
+    <div class="blok">
+      <h2>Verbruik per persoon</h2>
+
+      <button class="excelknop" onclick="downloadExcelBestand()">
+        Maak Excelbestand
+      </button>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Naam</th>
+            <th>Bier</th>
+            <th>Fris</th>
+            <th>Wijn</th>
+            <th>Speciaal bier</th>
+            <th>Overige</th>
+            <th>Totaal</th>
+          </tr>
+        </thead>
+        <tbody id="verbruikOverzicht"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const dranken = [
+    { key: "bier", naam: "Bier", prijs: 2.50 },
+    { key: "fris", naam: "Fris", prijs: 2.00 },
+    { key: "wijn", naam: "Wijn", prijs: 3.00 },
+    { key: "speciaal", naam: "Speciaal bier", prijs: 4.00 },
+    { key: "overige", naam: "Overige", prijs: 3.50 }
+  ];
+
+  const personen = [];
+
+  function toggleUitklap(id) {
+    document.getElementById(id).classList.toggle("open");
+  }
+
+  function sorteerPersonen() {
+    personen.sort((a, b) =>
+      a.naam.localeCompare(b.naam, "nl", { sensitivity: "base" })
+    );
+  }
+
+  function voegPersoonToe() {
+    const input = document.getElementById("naam");
+    const naam = input.value.trim();
+
+    if (!naam) {
+      alert("Vul een naam in.");
+      return;
+    }
+
+    const persoon = { naam: naam };
+
+    dranken.forEach(drank => {
+      persoon[drank.key] = 0;
+    });
+
+    personen.push(persoon);
+    sorteerPersonen();
+
+    input.value = "";
+    updateAlles();
+  }
+
+  function registreerDrankje(persoonIndex, drankKey, aantal) {
+    if (aantal < 0) {
+      const akkoord = confirm("Weet je zeker dat je dit drankje wil verwijderen?");
+      if (!akkoord) {
+        return;
+      }
+    }
+
+    const nieuwAantal = personen[persoonIndex][drankKey] + aantal;
+    personen[persoonIndex][drankKey] = Math.max(0, nieuwAantal);
+    updateAlles();
+  }
+
+  function wijzigPrijs(drankIndex, waarde) {
+    dranken[drankIndex].prijs = parseFloat(waarde) || 0;
+    updateAlles();
+  }
+
+  function berekenTotaal(persoon) {
+    return dranken.reduce((totaal, drank) => {
+      return totaal + persoon[drank.key] * drank.prijs;
+    }, 0);
+  }
+
+  function berekenEindtotaal() {
+    return personen.reduce((totaal, persoon) => {
+      return totaal + berekenTotaal(persoon);
+    }, 0);
+  }
+
+  function updateNamenOverzicht() {
+    const tbody = document.getElementById("namenOverzicht");
+    tbody.innerHTML = "";
+
+    personen.forEach((persoon, persoonIndex) => {
+      const knoppen = dranken.map(drank => `
+        <div class="drankgroep">
+          <strong>${drank.naam}</strong>
+          <span class="aantal">(${persoon[drank.key]})</span><br>
+          <button class="plus" onclick="registreerDrankje(${persoonIndex}, '${drank.key}', 1)">+</button>
+          <button class="min" onclick="registreerDrankje(${persoonIndex}, '${drank.key}', -1)">-</button>
+        </div>
+      `).join("");
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${persoon.naam}</td>
+          <td>${knoppen}</td>
+          <td>€ ${berekenTotaal(persoon).toFixed(2)}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function updateDrankenOverzicht() {
+    const tbody = document.getElementById("drankenOverzicht");
+    tbody.innerHTML = "";
+
+    dranken.forEach((drank, index) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${drank.naam}</td>
+          <td>
+            € <input type="number" value="${drank.prijs.toFixed(2)}" step="0.01"
+              onchange="wijzigPrijs(${index}, this.value)">
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function updateVerbruikOverzicht() {
+    const tbody = document.getElementById("verbruikOverzicht");
+    tbody.innerHTML = "";
+
+    personen.forEach(persoon => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${persoon.naam}</td>
+          <td>${persoon.bier}</td>
+          <td>${persoon.fris}</td>
+          <td>${persoon.wijn}</td>
+          <td>${persoon.speciaal}</td>
+          <td>${persoon.overige}</td>
+          <td>€ ${berekenTotaal(persoon).toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    if (personen.length > 0) {
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>Eindtotaal</strong></td>
+          <td><strong>${telDrank("bier")}</strong></td>
+          <td><strong>${telDrank("fris")}</strong></td>
+          <td><strong>${telDrank("wijn")}</strong></td>
+          <td><strong>${telDrank("speciaal")}</strong></td>
+          <td><strong>${telDrank("overige")}</strong></td>
+          <td><strong>€ ${berekenEindtotaal().toFixed(2)}</strong></td>
+        </tr>
+      `;
+    }
+  }
+
+  function telDrank(drankKey) {
+    return personen.reduce((totaal, persoon) => {
+      return totaal + persoon[drankKey];
+    }, 0);
+  }
+
+  function maakExcelInhoud() {
+    let csv = "Naam;Bier;Fris;Wijn;Speciaal bier;Overige;Totaal\n";
+
+    personen.forEach(persoon => {
+      csv += [
+        persoon.naam,
+        persoon.bier,
+        persoon.fris,
+        persoon.wijn,
+        persoon.speciaal,
+        persoon.overige,
+        berekenTotaal(persoon).toFixed(2).replace(".", ",")
+      ].join(";") + "\n";
+    });
+
+    csv += [
+      "Eindtotaal",
+      telDrank("bier"),
+      telDrank("fris"),
+      telDrank("wijn"),
+      telDrank("speciaal"),
+      telDrank("overige"),
+      berekenEindtotaal().toFixed(2).replace(".", ",")
+    ].join(";");
+
+    return csv;
+  }
+
+  function downloadExcelBestand() {
+    if (personen.length === 0) {
+      alert("Er zijn nog geen personen toegevoegd.");
+      return;
+    }
+
+    const csv = maakExcelInhoud();
+
+    const blob = new Blob(["\ufeff" + csv], {
+      type: "application/vnd.ms-excel;charset=utf-8;"
+    });
+
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.href = url;
+    link.download = "borrelregistratie-verbruik.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  }
+
+  function updateAlles() {
+    updateNamenOverzicht();
+    updateDrankenOverzicht();
+    updateVerbruikOverzicht();
+  }
+
+  updateAlles();
+</script>
+
+</body>
+</html>

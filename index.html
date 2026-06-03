@@ -89,6 +89,11 @@
       color: #000000;
     }
 
+    .resetknop {
+      background: #555555;
+      color: #ffffff;
+    }
+
     .uitklapknop {
       background: #000000;
       color: var(--wit);
@@ -139,17 +144,6 @@
       color: #555555;
       font-weight: normal;
     }
-
-    @media (max-width: 700px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .logo-img {
-        max-width: 240px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -160,11 +154,7 @@
     <p>Registreer snel wie wat heeft gedronken.</p>
   </div>
 
-  <img
-    class="logo-img"
-    src="gemeente-helmond-logo.png"
-    alt="Gemeente Helmond"
-  >
+  <img class="logo-img" src="gemeente-helmond-logo.png" alt="Gemeente Helmond">
 </header>
 
 <main>
@@ -173,6 +163,7 @@
     <h2>Naam toevoegen</h2>
     <input type="text" id="naam" placeholder="Naam">
     <button class="toevoegknop" onclick="voegPersoonToe()">Toevoegen</button>
+    <button class="resetknop" onclick="wisAlleGegevens()">Wis alle gegevens</button>
   </div>
 
   <div class="blok">
@@ -240,7 +231,9 @@
 </main>
 
 <script>
-  const dranken = [
+  const opslagNaam = "borrelregistratie-gegevens-v1";
+
+  let dranken = [
     { key: "bier", naam: "Bier", prijs: 2.50 },
     { key: "fris", naam: "Fris", prijs: 2.00 },
     { key: "wijn", naam: "Wijn", prijs: 3.00 },
@@ -248,7 +241,52 @@
     { key: "overige", naam: "Overige", prijs: 3.50 }
   ];
 
-  const personen = [];
+  let personen = [];
+
+  function gegevensOpslaan() {
+    const gegevens = {
+      dranken: dranken,
+      personen: personen
+    };
+
+    localStorage.setItem(opslagNaam, JSON.stringify(gegevens));
+  }
+
+  function gegevensLaden() {
+    const opgeslagenGegevens = localStorage.getItem(opslagNaam);
+
+    if (!opgeslagenGegevens) {
+      return;
+    }
+
+    try {
+      const gegevens = JSON.parse(opgeslagenGegevens);
+
+      if (Array.isArray(gegevens.dranken)) {
+        dranken = gegevens.dranken;
+      }
+
+      if (Array.isArray(gegevens.personen)) {
+        personen = gegevens.personen;
+      }
+
+      sorteerPersonen();
+    } catch (fout) {
+      console.error("Gegevens konden niet worden geladen.", fout);
+    }
+  }
+
+  function wisAlleGegevens() {
+    const akkoord = confirm("Weet je zeker dat je alle gegevens wil wissen?");
+
+    if (!akkoord) {
+      return;
+    }
+
+    personen = [];
+    localStorage.removeItem(opslagNaam);
+    updateAlles();
+  }
 
   function toggleUitklap(id) {
     document.getElementById(id).classList.toggle("open");
@@ -280,6 +318,7 @@
 
     input.value = "";
     updateAlles();
+    gegevensOpslaan();
   }
 
   function registreerDrankje(persoonIndex, drankKey, aantal) {
@@ -292,12 +331,15 @@
 
     const nieuwAantal = personen[persoonIndex][drankKey] + aantal;
     personen[persoonIndex][drankKey] = Math.max(0, nieuwAantal);
+
     updateAlles();
+    gegevensOpslaan();
   }
 
   function wijzigPrijs(drankIndex, waarde) {
     dranken[drankIndex].prijs = parseFloat(waarde) || 0;
     updateAlles();
+    gegevensOpslaan();
   }
 
   function berekenTotaal(persoon) {
@@ -309,6 +351,12 @@
   function berekenEindtotaal() {
     return personen.reduce((totaal, persoon) => {
       return totaal + berekenTotaal(persoon);
+    }, 0);
+  }
+
+  function telDrank(drankKey) {
+    return personen.reduce((totaal, persoon) => {
+      return totaal + persoon[drankKey];
     }, 0);
   }
 
@@ -386,12 +434,6 @@
     }
   }
 
-  function telDrank(drankKey) {
-    return personen.reduce((totaal, persoon) => {
-      return totaal + persoon[drankKey];
-    }, 0);
-  }
-
   function maakExcelInhoud() {
     let csv = "Naam;Bier;Fris;Wijn;Speciaal bier;Overige;Totaal\n";
 
@@ -450,6 +492,7 @@
     updateVerbruikOverzicht();
   }
 
+  gegevensLaden();
   updateAlles();
 </script>
 
